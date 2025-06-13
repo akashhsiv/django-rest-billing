@@ -90,8 +90,8 @@ def send_temporary_password_email(email, temp_password):
         email_message.attach_alternative(html_content, "text/html")
         
         # Send email
-        email_message.send()
-        logger.info(f"temp_password email sent to {email}")
+        res = email_message.send()
+        print(f"temp_password email sent to {email} {res}")
         return True
         
     except Exception as e:
