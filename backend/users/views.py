@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from .utils import send_temporary_password_email
 from .models import Users
-from .serializers import ChangePasswordSerializer, PasswordResetRequestSerializer, UserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer
+from .serializers import ChangePasswordSerializer, PasswordResetRequestSerializer, UserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, UserRegisterSerializer
 from .models import Users
 from .permissions import IsAdminUser, NotFirstLogin
 from django.db import transaction
@@ -180,9 +180,9 @@ class ChangePasswordView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserRegisterView(generics.CreateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = UserRegisterSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
-
+    
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

@@ -11,6 +11,26 @@ class UserSerializer(serializers.ModelSerializer):
         model = Users
         fields = ['id', 'email', 'username', 'user_type']
 
+class UserRegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['id', 'email', 'username', 'user_type']
+
+    def create(self, validated_data):
+        alphabet = string.ascii_letters + string.digits
+        temp_password = ''.join(secrets.choice(alphabet) for _ in range(10))
+
+        user = Users(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            user_type=validated_data.get('user_type', 'cashier'),
+            is_first_login=True,
+        )
+        user.set_password(temp_password)
+        user.save()
+
+        self._temp_password = temp_password
+        return user
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     expected_user_type = None 
