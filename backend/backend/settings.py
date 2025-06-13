@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from dotenv import load_dotenv
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -17,8 +18,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-from dotenv import load_dotenv
 
 # Load environment variables from .env file
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,7 +36,6 @@ SECRET_KEY = 'django-insecure-)e_yv=7@hcu^p4qj9n5=0a9xau0t_mw1ipeo2l5$5##(&+u6l^
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -153,6 +151,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 10,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -160,6 +161,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'users.validators.ContainsUppercaseValidator',
+    },
+    {
+        'NAME': 'users.validators.ContainsLowercaseValidator',
+    },
+    {
+        'NAME': 'users.validators.ContainsSymbolValidator',
+    }
 ]
 
 

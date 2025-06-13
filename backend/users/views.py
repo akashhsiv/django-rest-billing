@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from .utils import send_temporary_password_email
 from .models import Users
-from .serializers import ChangePasswordSerializer, PasswordResetRequestSerializer, UserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, UserRegisterSerializer
+from .serializers import PasswordResetRequestSerializer, UserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, UserRegisterSerializer
 from .models import Users
 from .permissions import IsAdminUser, NotFirstLogin
 from django.db import transaction
@@ -127,61 +127,21 @@ class PasswordResetConfirm(APIView):
     permission_classes = [AllowAny]
     serializer_class = ResetPasswordSerializer
 
-
     def post(self, request):
-        email = request.data.get('email')
-        otp = request.data.get('otp')
-        new_password = request.data.get('new_password')
-
-        if not all([email, otp, new_password]):
-            return Response({"message": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = Users.objects.filter(email=email, reset_password_otp=otp).first()
-
-        if user:
-            user.set_password(new_password)
-            user.reset_password_otp = None  
-            user.is_first_login = False
-            user.save()
-
-            return Response({
-                "message": "Password reset successfully. You can now log in.",
-                "first_login_completed": True
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response({"message": "Invalid OTP or email."}, status=status.HTTP_400_BAD_REQUEST)
-
-class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data)
-
-        if serializer.is_valid():
-            old_password = serializer.data.get("old_password")
-            new_password = serializer.data.get("new_password")
-            confirm_password = serializer.data.get("confirm_password")
-
-            user = request.user
-
-            if not user.check_password(old_password):
-                return Response({"message": "Old password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
-
-            if new_password != confirm_password:
-                return Response({"message": "New passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
-
-            user.set_password(new_password)
-            user.save()
-
+        serializer = ResetPasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save() 
+        if request.user.is_authenticated and request.user == user:
             update_session_auth_hash(request, user)
 
-            return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({
+            "message": "Password reset successfully. You can now log in.",
+            "first_login_completed": True
+        }, status=status.HTTP_200_OK)
+    
 class UserRegisterView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    # permission_classes = [IsAuthenticated, IsAdminUser]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
