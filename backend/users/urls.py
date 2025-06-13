@@ -14,7 +14,5 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('reset/', PasswordResetRequest.as_view(), name='pwd_reset'),
     path('reset/confirm/',
-         PasswordResetConfirm.as_view(), name='pwd_reset_cofirm'),
-    path('change-password/', ChangePasswordView.as_view(),
-         name='change-password'),
+         PasswordResetConfirm.as_view(), name='pwd_reset_confirm')
 ]
