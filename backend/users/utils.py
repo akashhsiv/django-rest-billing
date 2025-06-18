@@ -10,13 +10,27 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
+from twilio.rest import Client
 
 
 def generate_otp():
     """Generate a random OTP of specified length."""
     return ''.join(random.choices(string.digits, k=settings.OTP_LENGTH))
 
-def send_otp_email(email, otp):
+def send_otp_via_twilio(mobile, otp):
+    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    message = f"Your OTP is {otp}"
+
+    mobile_with_country_code = f"+91{mobile}"  # change if not Indian number
+
+    message = client.messages.create(
+        body=message,
+        from_=settings.TWILIO_PHONE_NUMBER,
+        to=mobile_with_country_code
+    )
+    return message.sid
+
+def send_otp_email(email,mobile, otp):
     """Send OTP to the user's email."""
     if settings.OTP_TEST_MODE:
         print(f"OTP for {email}: {otp}")
@@ -29,6 +43,7 @@ def send_otp_email(email, otp):
     
     try:
         send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        send_otp_via_twilio(mobile=mobile, otp=otp)  
         return True
     except Exception as e:
         print(f"Error sending email: {e}")

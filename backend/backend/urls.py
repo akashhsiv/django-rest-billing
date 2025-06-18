@@ -28,10 +28,13 @@ from .utils import api_root
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('users.urls')),
-    path('', api_root, name='api-root'),  # DRF root view
-    path('api-auth/', include('rest_framework.urls')),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path('api/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
+    path('api/', include([
+        path('', api_root, name='api-root'),
+        path('', include('users.urls')),
+        path('', include('products.urls')),  
+        path('auth/', include('rest_framework.urls')),  # Moved under /api/auth/
+        path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+        path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+        path('logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
+    ])),
 ]

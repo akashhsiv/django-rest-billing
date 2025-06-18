@@ -41,6 +41,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     password_hash = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     user_type = models.CharField(max_length=20, choices=[('super_admin', 'Super Admin'), ('manager', 'Manager'), ('cashier', 'Cashier')])
+    mobile = models.CharField(max_length=15, null=True, blank=True)
     reset_password_otp = models.CharField(max_length=4, null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
