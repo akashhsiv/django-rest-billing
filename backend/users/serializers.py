@@ -128,3 +128,52 @@ class ResetPasswordSerializer(serializers.Serializer):
             user.save()
             return user
         return None 
+
+# serializers.py
+class ConfirmOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(min_length=4, max_length=6)
+    new_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={'input_type': 'password'}
+    )
+    confirm_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={'input_type': 'password'}
+    )
+
+    def validate(self, data):
+        email = data.get('email')
+        otp_code = data.get('otp')
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+
+        user = Users.objects.filter(email=email, reset_password_otp=otp_code).first()
+
+        if not user:
+            raise serializers.ValidationError({"detail": _("Invalid email or OTP.")})
+
+        self.context['user'] = user
+        
+        if new_password != confirm_password:
+            raise serializers.ValidationError({"new_password": _("New passwords do not match.")})
+        try:
+            password_validation.validate_password(new_password, user)
+        except ValidationError as e:
+            raise serializers.ValidationError({'new_password': list(e.messages)})
+
+        return data
+    
+    def save(self, **kwargs):
+        user = self.context.get('user')
+        new_password = self.validated_data['new_password']
+
+        if user:
+            user.set_password(new_password)
+            user.reset_password_otp = None 
+            user.is_first_login = False
+            user.save()
+            return user
+        return None 
