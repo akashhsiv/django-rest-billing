@@ -31,7 +31,7 @@ urlpatterns = [
     path('api/', include([
         path('', api_root, name='api-root'),
         path('', include('users.urls')),
-        path('', include('products.urls')),  
+        # path('', include('products.urls')),  
         path('auth/', include('rest_framework.urls')),  # Moved under /api/auth/
         path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
         path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
