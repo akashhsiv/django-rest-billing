@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from .utils import send_temporary_password_email, send_otp_via_twilio
 from .models import Users
-from .serializers import PasswordResetRequestSerializer, UserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, UserRegisterSerializer
+from .serializers import PasswordResetRequestSerializer, UserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, UserRegisterSerializer, ConfirmOTPSerializer
 from .models import Users
 from .permissions import IsAdminUser, NotFirstLogin
 from django.db import transaction
@@ -195,3 +195,46 @@ class CashierLoginView(TokenObtainPairView):
         (MyTokenObtainPairSerializer,),
         {"expected_user_type": "cashier"},
     )
+
+class ForgotPasswordOTPView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetRequestSerializer
+    
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        user = Users.objects.filter(email=email).first()
+            
+        if user:
+            otp = get_random_string(length=4, allowed_chars='1234567890')
+            print("-------------",otp)
+            user.reset_password_otp = otp
+
+            user.save()
+            
+
+            body = template.format(username=user.username, otp=otp)
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [email]
+
+            send_mail(subject, "", from_email,
+                    recipient_list, html_message=body)
+            send_otp_via_twilio(mobile=user.mobile, otp=otp)
+            return Response({"message": "OTP sent to your email address.", "otp": otp, "email": email}, status=status.HTTP_200_OK)
+    
+        else:
+            return Response({"message": "OTP sent to your registered email address."}, status=status.HTTP_404_NOT_FOUND)
+        
+class ForgotPasswordConfirmView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = ConfirmOTPSerializer
+
+    def post(self, request):
+        serializer = ConfirmOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response({
+            "message": "Password reset successful. You can now log in."
+        }, status=status.HTTP_200_OK)
