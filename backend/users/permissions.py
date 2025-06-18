@@ -1,6 +1,5 @@
 from rest_framework import permissions
 
-
 class NotFirstLogin(permissions.BasePermission):
     message = "You must change your password before accessing this resource."
 
