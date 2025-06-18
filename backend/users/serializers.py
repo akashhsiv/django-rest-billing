@@ -12,13 +12,13 @@ from django.utils.translation import gettext_lazy as _
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ['id', 'email', 'username', 'user_type']
+        fields = ['id', 'email', 'username', 'user_type', 'mobile', 'is_first_login', 'last_login']
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ['id', 'email', 'username', 'user_type']
+        fields = ['id', 'email', 'username', 'user_type', "mobile"]
 
     def create(self, validated_data):
         alphabet = string.ascii_letters + string.digits
@@ -28,6 +28,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             username=validated_data['username'],
             user_type=validated_data.get('user_type', 'cashier'),
+            mobile=validated_data.get('mobile', None),
             is_first_login=True,
         )
         user.set_password(temp_password)

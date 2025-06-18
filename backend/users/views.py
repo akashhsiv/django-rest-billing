@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from django.core.mail import send_mail
-from .utils import send_temporary_password_email
+from .utils import send_temporary_password_email, send_otp_via_twilio
 from .models import Users
 from .serializers import PasswordResetRequestSerializer, UserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, UserRegisterSerializer
 from .models import Users
@@ -113,13 +113,11 @@ class PasswordResetRequest(APIView):
                 from_email = settings.EMAIL_HOST_USER
                 recipient_list = [email]
 
-                # try:
                 send_mail(subject, "", from_email,
                         recipient_list, html_message=body)
+                send_otp_via_twilio(mobile=user.mobile, otp=otp)
                 return Response({"message": "OTP sent to your email address.", "otp": otp, "email": email}, status=status.HTTP_200_OK)
-                # except Exception as e:
-                    # print(e)
-                    # return Response({"detail": "Failed to send OTP. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
             else:
                 return Response({"message": "OTP sent to your registered email address."}, status=status.HTTP_404_NOT_FOUND)
 
