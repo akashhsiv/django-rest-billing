@@ -13,13 +13,13 @@ class CustomAccountManager(BaseUserManager):
         other_fields.setdefault('is_superuser', True)
         other_fields.setdefault('is_active', True)
         other_fields.setdefault('user_type', "super_admin")
+        other_fields.setdefault('is_first_login', False)
 
         if other_fields.get('is_staff') is not True:
             raise ValueError(
                 'Superuser must be assigned to is_staff=True.')
         if other_fields.get('is_superuser') is not True:
-            raise ValueError(
-                'Superuser must be assigned to is_superuser=True.')
+            raise ValueError('Superuser must be assigned to is_superuser=True.')
 
         return self.create_user(email, username, password, **other_fields)
 
@@ -28,8 +28,13 @@ class CustomAccountManager(BaseUserManager):
         if not email:
             raise ValueError(_('You must provide an email address'))
 
+        if not other_fields.get('mobile'):
+            raise ValueError(_('You must provide a mobile number'))
+
+        other_fields.setdefault('is_first_login', False)  
+
         email = self.normalize_email(email)
-        user = self.model(email=email, username=username,**other_fields)
+        user = self.model(email=email, username=username, **other_fields)
         user.set_password(password)
         user.save()
         return user
@@ -49,7 +54,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'mobile']
 
     def __str__(self):
         return self.email
