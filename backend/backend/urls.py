@@ -28,8 +28,9 @@ from .utils import api_root
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', api_root, name='api-root'),
+    
     path('api/', include([
-        path('', api_root, name='api-root'),
         path('', include('users.urls')),
         # path('', include('products.urls')),  
         path('auth/', include('rest_framework.urls')),  # Moved under /api/auth/
