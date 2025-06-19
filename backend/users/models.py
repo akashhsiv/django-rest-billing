@@ -3,7 +3,12 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 from datetime import *
+from django.core.validators import RegexValidator
 
+indian_mobile_validator = RegexValidator(
+    regex=r'^[6-9]\d{9}$',
+    message="Enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9."
+)
 
 class CustomAccountManager(BaseUserManager):
 
@@ -46,7 +51,11 @@ class Users(AbstractBaseUser, PermissionsMixin):
     password_hash = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     user_type = models.CharField(max_length=20, choices=[('super_admin', 'Super Admin'), ('manager', 'Manager'), ('cashier', 'Cashier')])
-    mobile = models.CharField(max_length=15, null=True, blank=True)
+    mobile = models.CharField(
+        max_length=10,
+        unique=True,
+        validators=[indian_mobile_validator]
+    )
     reset_password_otp = models.CharField(max_length=4, null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
