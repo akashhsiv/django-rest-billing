@@ -20,11 +20,9 @@ A Django REST Framework API for user management with role-based access control.
 
 5. **Create admin user**
    ```bash
-   python manage.py create_admin
+   python manage.py createsuperuser
    ```
-   Default admin credentials:
-   - Email: admin@example.com
-   - Password: admin123
+   
 
 6. **Run the development server**
    ```bash
